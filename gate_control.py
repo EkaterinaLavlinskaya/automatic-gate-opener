@@ -17,10 +17,15 @@ def connect_arduino(port='COM4', baudrate=9600):
         print(f" Ошибка подключения: {e}")
         return None
 
-def open_gate(arduino):
-    """Открыть ворота (включить светодиод)"""
-    arduino.write(b'1')
-    print(" Ворота открыты")
+def open_gate(arduino, recognized_text, allowed_plates):
+    """Открыть ворота, если номер в списке"""
+    if recognized_text in allowed_plates:
+        arduino.write(b'1')
+        print("Ворота открыты")
+        return True
+    else:
+        print("Номер не в списке. Ворота закрыты")
+        return False
 
 def close_gate(arduino):
     """Закрыть ворота (выключить светодиод)"""
