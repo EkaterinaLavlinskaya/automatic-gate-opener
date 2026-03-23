@@ -1,7 +1,7 @@
 import serial
 import time
 
-arduino = serial.Serial('COM4', 9600)   # замени на свой порт
+arduino = serial.Serial('COM4', 9600)   
 time.sleep(2)                           # ждём инициализации
 
 # Открыть ворота (зажечь светодиод)
@@ -17,7 +17,7 @@ import easyocr
 
 reader = easyocr.Reader(['ru', 'en'])
 img = cv2.imread('car_with_plate.jpg')
-plate = img[100:200, 150:350]   # подбери координаты под своё фото
+plate = img[100:200, 150:350]   # подобрать координаты под своё фото
 result = reader.readtext(plate)
 print(result)   # [([[x1,y1,x2,y2]], 'A123BC', confidence)]
 
