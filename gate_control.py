@@ -1,31 +1,40 @@
+"""
+Управление светодиодом (симуляция ворот) через Arduino.
+Команды: '1' — включить, '0' — выключить
+"""
+
 import serial
 import time
 
-arduino = serial.Serial('COM4', 9600)   
-time.sleep(2)                           # ждём инициализации
+def connect_arduino(port='COM4', baudrate=9600):
+    """Подключение к Arduino"""
+    try:
+        arduino = serial.Serial(port, baudrate)
+        time.sleep(2)   # ждём инициализации
+        print(f"Подключено к {port}")
+        return arduino
+    except Exception as e:
+        print(f" Ошибка подключения: {e}")
+        return None
 
-# Открыть ворота (зажечь светодиод)
-arduino.write(b'1')
-time.sleep(2)
+def open_gate(arduino):
+    """Открыть ворота (включить светодиод)"""
+    arduino.write(b'1')
+    print(" Ворота открыты")
 
-# Закрыть ворота (погасить)
-arduino.write(b'0')
-arduino.close()
+def close_gate(arduino):
+    """Закрыть ворота (выключить светодиод)"""
+    arduino.write(b'0')
+    print(" Ворота закрыты")
 
-import cv2
-import easyocr
+if __name__ == "__main__":
 
-reader = easyocr.Reader(['ru', 'en'])
-img = cv2.imread('car_with_plate.jpg')
-plate = img[100:200, 150:350]   # подобрать координаты под своё фото
-result = reader.readtext(plate)
-print(result)   # [([[x1,y1,x2,y2]], 'A123BC', confidence)]
+    PORT = 'COM4'   
 
-allowed_plates = ['A123BC', 'B456DE']
 
-recognized_text = result[0][1]   # текст номера
-
-if recognized_text in allowed_plates:
-    arduino.write(b'1')          # открываем ворота
-else:
-    print("Номер не в списке")
+    arduino = connect_arduino(PORT)
+    if arduino:
+        open_gate(arduino)
+        time.sleep(2)
+        close_gate(arduino)
+        arduino.close()
