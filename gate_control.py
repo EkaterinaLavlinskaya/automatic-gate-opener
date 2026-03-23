@@ -10,7 +10,7 @@ def connect_arduino(port='COM4', baudrate=9600):
     """Подключение к Arduino"""
     try:
         arduino = serial.Serial(port, baudrate)
-        time.sleep(2)   # ждём инициализации
+        time.sleep(2)   
         print(f"Подключено к {port}")
         return arduino
     except Exception as e:
