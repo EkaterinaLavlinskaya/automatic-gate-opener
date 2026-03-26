@@ -45,8 +45,8 @@ while True:
     # Считаем количество пикселей, которые изменились
     motion_pixels = cv2.countNonZero(thresh)
 
-    # Если движение есть (больше 5000 пикселей)
-    if motion_pixels > 15000:
+    # Если движение есть (больше 25000 пикселей)
+    if motion_pixels > 25000:
         if not recording:
             # Начинаем запись
             filename = f"C:/Users/Денис/Downloads/motion_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.avi"
