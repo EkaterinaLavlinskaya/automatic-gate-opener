@@ -57,8 +57,12 @@ while True:
             class_id = np.argmax(scores)
             confidence = scores[class_id]
 
-            if confidence > CONFIDENCE_THRESHOLD and class_id in TARGET_IDS:
-                car_detected = True
+           if confidence > CONFIDENCE_THRESHOLD and class_id in TARGET_IDS:
+    # Дополнительная проверка на размер
+               box_width = detection[2] * width
+               box_height = detection[3] * height
+               if box_width > 100 and box_height > 100:  # машина должна быть не меньше 100x100 пикселей
+                   car_detected = True
                 if confidence > best_confidence:
                     best_confidence = confidence
                     center_x = int(detection[0] * width)
