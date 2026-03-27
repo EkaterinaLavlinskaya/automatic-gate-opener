@@ -2,21 +2,23 @@ import cv2
 import numpy as np
 import os
 
-# Путь к папке с файлами YOLO
-YOLO_PATH = r"C:\MyPythonProjects\AV\yolo-coco"
+# Файлы YOLO в той же папке, что и скрипт
+YOLO_PATH = os.path.dirname(__file__)  # или просто "."
 
 # Загрузка классов
 with open(os.path.join(YOLO_PATH, "coco.names"), "r") as f:
     classes = [line.strip() for line in f.readlines()]
 
 # Индексы: car, truck, bus
-TARGET_IDS = [2, 7, 5]  # car, truck, bus
+TARGET_IDS = [2, 7, 5]
 
 # Загрузка YOLO
 net = cv2.dnn.readNet(
     os.path.join(YOLO_PATH, "yolov3.weights"),
     os.path.join(YOLO_PATH, "yolov3.cfg")
 )
+
+
 
 layer_names = net.getLayerNames()
 output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
