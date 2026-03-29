@@ -1,102 +1,123 @@
-# ============================================
-# ДООБУЧЕНИЕ YOLOv8 НА ДАТАСЕТЕ Av.rar
-# ============================================
+# ======================================================
+# 1. УСТАНОВКА И ПОДГОТОВКА СРЕДЫ
+# ======================================================
+!apt-get install -y unrar > /dev/null 2>&1
+!pip install ultralytics -q
 
 import os
-import zipfile
 import shutil
-from ultralytics import YOLO
+from google.colab import files
 
-# ---------------------------
-# 1. Установка и подготовка
-# ---------------------------
-print("🚀 Установка unrar...")
-!apt-get install -y unrar > /dev/null 2>&1
+print("✅ Среда подготовлена")
 
-print("📦 Загрузка датасета с Google Drive...")
-!gdown "1h2j5hZnGbT8YZjc6elJwZ3Lizeo6J-iJ" -O Av.rar --quiet
+# ======================================================
+# 2. ЗАГРУЗКА ДАТАСЕТА
+# ======================================================
+print("\n📥 Скачивание датасета yolo-coco.rar...")
+!gdown "19lmkRfjapriXecuVaveMVhPsHltLA2EB" -O yolo-coco.rar --quiet
 
-# ---------------------------
-# 2. Распаковка
-# ---------------------------
 print("📂 Распаковка архива...")
-os.makedirs("/content/data", exist_ok=True)
-!unrar x Av.rar /content/data/ > /dev/null 2>&1
+!unrar x yolo-coco.rar /content/dataset_raw/ > /dev/null 2>&1
 
-# ---------------------------
-# 3. Копирование всех JPG и TXT в одну папку
-# ---------------------------
-print("🖼️ Копирование файлов в единую папку...")
-os.makedirs("/content/images", exist_ok=True)
+# ======================================================
+# 3. ПРОВЕРКА И КОПИРОВАНИЕ ДАННЫХ
+# ======================================================
+print("\n🔍 Проверка структуры...")
+!ls -la /content/dataset_raw/
 
-jpg_files = []
-txt_files = []
+# Создаём правильную структуру для YOLO
+os.makedirs("/content/dataset/images/train", exist_ok=True)
+os.makedirs("/content/dataset/labels/train", exist_ok=True)
 
-for root, dirs, files in os.walk("/content/data"):
-    for file in files:
-        if file.lower().endswith('.jpg'):
-            jpg_files.append(os.path.join(root, file))
-        elif file.lower().endswith('.txt'):
-            txt_files.append(os.path.join(root, file))
+# Копируем изображения
+if os.path.exists("/content/dataset_raw/images"):
+    for f in os.listdir("/content/dataset_raw/images"):
+        if f.endswith(('.jpg', '.png', '.jpeg')):
+            shutil.copy(
+                f"/content/dataset_raw/images/{f}",
+                f"/content/dataset/images/train/{f}"
+            )
 
-for src in jpg_files + txt_files:
-    shutil.copy(src, "/content/images/")
+# Копируем разметку
+if os.path.exists("/content/dataset_raw/labels"):
+    for f in os.listdir("/content/dataset_raw/labels"):
+        if f.endswith('.txt'):
+            shutil.copy(
+                f"/content/dataset_raw/labels/{f}",
+                f"/content/dataset/labels/train/{f}"
+            )
 
-print(f"   ✅ JPG: {len(jpg_files)}")
-print(f"   ✅ TXT: {len(txt_files)}")
+# Считаем количество
+train_images = len(os.listdir("/content/dataset/images/train"))
+train_labels = len(os.listdir("/content/dataset/labels/train"))
 
-# ---------------------------
-# 4. Создание dataset.yaml
-# ---------------------------
-yaml_content = """
-path: /content/images
-train: .
-val: .
+print(f"\n✅ Скопировано изображений: {train_images}")
+print(f"✅ Скопировано файлов разметки: {train_labels}")
+
+if train_images == 0 or train_labels == 0:
+    print("\n⚠️ ВНИМАНИЕ: Не найдены изображения или разметка!")
+    print("Содержимое папок:")
+    !ls -la /content/dataset_raw/
+    !ls -la /content/dataset_raw/images/ 2>/dev/null
+    !ls -la /content/dataset_raw/labels/ 2>/dev/null
+
+# ======================================================
+# 4. СОЗДАНИЕ КОНФИГУРАЦИОННОГО ФАЙЛА
+# ======================================================
+yaml_content = f"""
+path: /content/dataset
+train: images/train
+val: images/train
 nc: 1
 names: ['car']
 """
 
-with open('/content/dataset.yaml', 'w') as f:
+with open("/content/dataset.yaml", "w") as f:
     f.write(yaml_content)
 
-print("   ✅ dataset.yaml создан")
+print("\n✅ Файл dataset.yaml создан:")
+!cat /content/dataset.yaml
 
-# ---------------------------
-# 5. Запуск обучения
-# ---------------------------
-print("\n🔥 ЗАПУСК ОБУЧЕНИЯ (200 эпох, ~30-60 минут)...")
-print("=" * 50)
+# ======================================================
+# 5. ЗАПУСК ОБУЧЕНИЯ
+# ======================================================
+from ultralytics import YOLO
+
+print("\n🔥 ЗАПУСК ОБУЧЕНИЯ...")
+print("=" * 40)
 
 model = YOLO("yolov8n.pt")
 
 results = model.train(
     data="/content/dataset.yaml",
-    epochs=200,           # 200 эпох
-    imgsz=416,            # размер изображения
-    batch=8,              # батч (уменьши до 4 при ошибке памяти)
+    epochs=100,           # 100 эпох
+    imgsz=640,            # размер изображения
+    batch=8,              # размер батча
     device=0,             # GPU
-    workers=2,            
-    patience=50,          # остановка при отсутствии улучшений
+    workers=2,
+    patience=30,          # ранняя остановка
     save_period=25,       # сохранять каждые 25 эпох
     verbose=True
 )
 
-# ---------------------------
-# 6. Тестирование модели
-# ---------------------------
+# ======================================================
+# 6. ТЕСТИРОВАНИЕ МОДЕЛИ
+# ======================================================
 print("\n🧪 Тестирование модели на первом изображении...")
-test_image = "/content/images/" + [f for f in os.listdir("/content/images") if f.endswith('.jpg')][0]
+test_image = "/content/dataset/images/train/" + os.listdir("/content/dataset/images/train")[0]
 results_test = model(test_image)
 
 from google.colab.patches import cv2_imshow
-cv2_imshow(results_test[0].plot())
+img_with_boxes = results_test[0].plot()
+cv2_imshow(img_with_boxes)
 
-# ---------------------------
-# 7. Скачивание модели
-# ---------------------------
+# ======================================================
+# 7. СКАЧИВАНИЕ МОДЕЛИ
+# ======================================================
 print("\n📥 Скачивание best.pt на компьютер...")
-from google.colab import files
 files.download('/content/runs/detect/train/weights/best.pt')
 
-print("\n✅ ВСЁ ГОТОВО! Модель обучена и скачана.")
+print("\n" + "=" * 40)
+print("✅ ВСЁ ГОТОВО! Модель обучена и скачана.")
 print("📁 Путь к модели: /content/runs/detect/train/weights/best.pt")
+print("=" * 40)
