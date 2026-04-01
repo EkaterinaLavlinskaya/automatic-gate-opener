@@ -1,0 +1,9 @@
+
+```txt
+ultralytics>=8.0.0
+easyocr>=1.7.0
+opencv-python>=4.8.0
+pyserial>=3.5
+requests>=2.31.0
+paddlepaddle>=2.5.0  # опционально
+paddleocr>=2.7.0     # опционально
