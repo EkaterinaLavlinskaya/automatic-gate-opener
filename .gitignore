@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+venv310/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project specific
+recordings/
+*.avi
+*.mp4
+*.jpg
+*.png
+*.pt
+data/*.csv
+!data/allowed_plates.csv
+
+# OS
+.DS_Store
+Thumbs.db
