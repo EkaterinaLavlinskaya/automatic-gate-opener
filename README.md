@@ -71,7 +71,7 @@ python plate_reader.py --image test.jpg
 📁 Структура проекта
 text
 automatic-gate/
-├── gate_system.py          # Основной скрипт с камерой
+├── gate_system.py          # Основной скрипт с камерой, в зависимости от качества вашей камеры могут понадобиться дополнительные настройки easyocr
 ├── plate_reader.py         # Тестирование на фото
 ├── requirements.txt        # Зависимости
 ├── data/
@@ -97,7 +97,7 @@ requests
 🔧 Настройка под себя
 Модель YOLO: замени yolo11n.pt на свою best.pt
 
-OCR: можно заменить EasyOCR на PaddleOCR
+OCR: можно заменить EasyOCR на PaddleOCR,в зависимости от качества вашей камеры могут понадобиться дополнительные настройки easyocr
 
 SMS: можно заменить на другой провайдер (Beeline, MTS Exolve)
 
