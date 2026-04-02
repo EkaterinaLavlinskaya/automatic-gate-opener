@@ -7,6 +7,8 @@
 ## 🎥 Демо
 
 ![Demo](automatic-gate/recordings/demo.gif)
+
+
 *Короткое видео работы системы можно посмотреть [по ссылке]([docs/car_20260402_114401.avi](https://drive.google.com/file/d/11ftFWCySe6rMIT_O_HFaOPrpFJD6Pzfn/view?usp=sharing))*
 
 ## 📋 Возможности
