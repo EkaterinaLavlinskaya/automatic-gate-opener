@@ -1,5 +1,5 @@
 
-# 🚗 Automatic Gate Control System
+#  Automatic Gate Control System
 
 Система автоматического распознавания автомобильных номеров для контроля доступа.  
 Камера → YOLO → OCR → Проверка базы → Arduino → Ворота.
