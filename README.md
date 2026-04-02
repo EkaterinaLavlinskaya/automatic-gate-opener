@@ -58,7 +58,7 @@ YOUR_PHONE = "+7XXXXXXXXXX"
 Загрузи скетч arduino/gate_control.ino в Arduino и укажи COM-порт в коде:
 
 python
-arduino = serial.Serial('COM3', 9600, timeout=1)
+arduino = serial.Serial('COM4', 9600, timeout=1)
 7. Запусти систему
 bash
 python gate_system.py
