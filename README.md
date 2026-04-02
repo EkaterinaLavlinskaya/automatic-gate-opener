@@ -6,7 +6,7 @@
 
 ## 🎥 Демо
 
-![Demo](docs/demo.gif)
+![Demo](automatic-gate/recordings/docsdemo.gif)
 
 ## 📋 Возможности
 
