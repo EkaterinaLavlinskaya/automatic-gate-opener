@@ -11,7 +11,6 @@ from ultralytics import YOLO
 # ============================================
 # НАСТРОЙКИ
 # ============================================
-# Arduino (проверьте COM-порт!)
 try:
     arduino = serial.Serial('COM4', 9600, timeout=1)
     time.sleep(2)
@@ -48,7 +47,6 @@ car_detected = False
 # ФУНКЦИИ
 # ============================================
 def normalize_plate(text):
-    """Нормализация номера"""
     lat_to_cyr = {
         'A': 'А', 'B': 'В', 'C': 'С', 'E': 'Е', 'H': 'Н',
         'K': 'К', 'M': 'М', 'O': 'О', 'P': 'Р', 'T': 'Т',
@@ -69,14 +67,12 @@ def normalize_plate(text):
     return text
 
 def add_timestamp(frame):
-    """Добавляет время на кадр"""
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     cv2.putText(frame, current_time, (10, 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
     return frame
 
 def send_sms(message):
-    """Отправка SMS (опционально)"""
     if SMS_API_KEY and YOUR_PHONE:
         try:
             url = "https://sms.ru/sms/send"
@@ -95,7 +91,7 @@ if not cap.isOpened():
     exit()
 
 print("✅ Камера запущена. Нажми 'q' для выхода")
-print("📹 Запись начнётся при обнаружении автомобиля")
+print("📹 Запись MP4 начнётся при обнаружении автомобиля")
 print("🔍 Распознавание номеров включено")
 
 frame_count = 0
@@ -108,7 +104,6 @@ while True:
     frame = add_timestamp(frame)
     frame_count += 1
     
-    # Обрабатываем каждый 3-й кадр
     if frame_count % 3 == 0:
         results = model(frame, conf=0.3)
         cars = [box for box in results[0].boxes if int(box.cls[0]) == 2]
@@ -119,9 +114,10 @@ while True:
                 print(f"🚗 Автомобиль обнаружен в {datetime.datetime.now().strftime('%H:%M:%S')}")
                 if not recording:
                     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                    filename = os.path.join(VIDEO_SAVE_PATH, f"car_{timestamp}.avi")
+                    filename = os.path.join(VIDEO_SAVE_PATH, f"car_{timestamp}.mp4")
                     h, w = frame.shape[:2]
-                    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+                    # Используем MP4V кодек для MP4
+                    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
                     video_writer = cv2.VideoWriter(filename, fourcc, 20.0, (w, h))
                     recording = True
                     current_recording_start = time.time()
@@ -129,15 +125,11 @@ while True:
             
             last_car_detected_time = time.time()
             
-            # ============================================
-            # РАСПОЗНАВАНИЕ НОМЕРА
-            # ============================================
             for car in cars:
                 x1, y1, x2, y2 = map(int, car.xyxy[0].tolist())
                 car_h = y2 - y1
                 car_w = x2 - x1
                 
-                # Вырезаем область номера
                 y1_plate = y1 + int(car_h * 0.50)
                 y2_plate = y1 + int(car_h * 0.92)
                 x1_plate = x1 + int(car_w * 0.15)
@@ -146,7 +138,6 @@ while True:
                 plate = frame[y1_plate:y2_plate, x1_plate:x2_plate]
                 
                 if plate.size > 0:
-                    # Распознавание
                     result = reader.readtext(plate)
                     if result:
                         raw_text = result[0][1].upper()
@@ -155,7 +146,6 @@ while True:
                         
                         print(f"🔍 Распознано: {raw_text} → {normalized} (уверенность: {confidence:.2f})")
                         
-                        # Проверка доступа
                         if normalized in ALLOWED_PLATES:
                             print(f"🔓 ДОСТУП РАЗРЕШЁН! Номер {normalized} в базе")
                             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
@@ -171,7 +161,7 @@ while True:
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                     else:
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 2)
-                        cv2.putText(frame, "Plate not recognized", (x1, y1-10),
+                        cv2.putText(frame, "Plate?", (x1, y1-10),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
         
         else:
@@ -186,7 +176,6 @@ while True:
                         print(f"🛑 Запись остановлена (длительность: {duration:.1f} сек)")
                         recording = False
     
-    # Запись видео
     if recording and video_writer:
         video_writer.write(frame)
     
