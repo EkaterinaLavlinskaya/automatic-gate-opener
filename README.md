@@ -7,6 +7,7 @@
 ## 🎥 Демо
 
 ![Demo](automatic-gate/recordings/demo.gif)
+*Короткое видео работы системы можно посмотреть [по ссылке]([docs/car_20260402_114401.avi](https://drive.google.com/file/d/11ftFWCySe6rMIT_O_HFaOPrpFJD6Pzfn/view?usp=sharing))*
 
 ## 📋 Возможности
 
@@ -71,7 +72,7 @@ python plate_reader.py --image test.jpg
 📁 Структура проекта
 
 automatic-gate/
-├── gate_system.py          # Основной скрипт с камерой, в зависимости от качества вашей камеры могут понадобиться дополнительные настройки easyocr
+├── gate_system.py          # Основной скрипт с камерой
 ├── plate_reader.py         # Тестирование на фото
 ├── requirements.txt        # Зависимости
 ├── data/
