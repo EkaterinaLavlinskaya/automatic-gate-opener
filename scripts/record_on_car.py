@@ -3,13 +3,13 @@ import numpy as np
 import os
 import datetime
 
-# ===== НАСТРОЙКИ =====
+# НАСТРОЙКИ
 YOLO_PATH = r"C:\MyPythonProjects\AV\yolo-coco"
 OUTPUT_FOLDER = r"C:\MyPythonProjects\AV"  # куда сохранять видео
 CONFIDENCE_THRESHOLD = 0.5
 TARGET_IDS = [2, 5, 7, 6]  # car, bus, truck
 
-# ===== ЗАГРУЗКА YOLO =====
+#ЗАГРУЗКА YOLO
 print("Загрузка YOLO...")
 with open(os.path.join(YOLO_PATH, "coco.names"), "r") as f:
     classes = [line.strip() for line in f.readlines()]
@@ -22,18 +22,18 @@ net = cv2.dnn.readNet(
 layer_names = net.getLayerNames()
 output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
 
-# ===== КАМЕРА =====
+# КАМЕРА 
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
-    print("❌ Камера не найдена")
+    print(" Камера не найдена")
     exit()
 
-# ===== ПЕРЕМЕННЫЕ ДЛЯ ЗАПИСИ =====
+# ПЕРЕМЕННЫЕ ДЛЯ ЗАПИСИ
 recording = False
 out = None
 filename = ""
 
-print("🔍 Слежу за машинами... Нажми 'q' для выхода")
+print(" Слежу за машинами... Нажми 'q' для выхода")
 
 while True:
     ret, frame = cap.read()
@@ -70,7 +70,7 @@ while True:
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 cv2.putText(frame, label, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-    # ===== ЛОГИКА ЗАПИСИ =====
+    # ЛОГИКА ЗАПИСИ
     if car_detected:
         if not recording:
             # Начинаем запись
@@ -84,7 +84,7 @@ while True:
             # Останавливаем запись
             recording = False
             out.release()
-            print(f"⏹️ Запись остановлена")
+            print(f" Запись остановлена")
 
     # Записываем кадр, если идет запись
     if recording:
@@ -102,9 +102,9 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# ===== ЗАВЕРШЕНИЕ =====
+#  ЗАВЕРШЕНИЕ
 if recording:
     out.release()
 cap.release()
 cv2.destroyAllWindows()
-print("✅ Программа завершена")
+print(" Программа завершена")
