@@ -1,11 +1,10 @@
 import cv2
 import datetime
 
-# Открываем камеру
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)# Открываем камеру
 
 if not cap.isOpened():
-    print("❌ Камера не найдена")
+    print(" Камера не найдена")
     exit()
 
 # Параметры видео
@@ -20,7 +19,7 @@ recording = False
 out = None
 filename = ""
 
-print("🔍 Ожидание движения...")
+print(" Ожидание движения...")
 print("Нажми 'q' для выхода")
 
 while True:
@@ -67,7 +66,7 @@ while True:
             # Останавливаем запись
             recording = False
             out.release()
-            print(f"⏹️ Движение закончилось. Видео сохранено")
+            print(f" Движение закончилось. Видео сохранено")
 
     # Показываем движение на экране (зеленым цветом там, где движение)
     cv2.imshow('Motion Detection', thresh)
@@ -81,4 +80,4 @@ cap.release()
 if out:
     out.release()
 cv2.destroyAllWindows()
-print("✅ Программа завершена")
+print(" Программа завершена")
