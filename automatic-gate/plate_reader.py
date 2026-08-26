@@ -14,7 +14,7 @@ db_path = "/content/allowed_plates.csv"
 df = pd.DataFrame({"plate": allowed_plates_list})
 df.to_csv(db_path, index=False, encoding="utf-8")
 
-print("✅ База номеров создана")
+print(" База номеров создана")
 print("Разрешённые номера:")
 for plate in allowed_plates_list:
     print(f"   - {plate}")
@@ -33,8 +33,9 @@ reader = easyocr.Reader(['ru', 'en'], gpu=False)
 # База разрешённых номеров
 allowed_plates = ["А273КК", "Н642ВУ", "А123ВС", "В456CD", "X999XX", "К777АА"]
 
+#Гибкая нормализация номера
 def normalize_plate(text):
-    """Гибкая нормализация номера"""
+    
     # 1. Замена латиницы на кириллицу
     lat_to_cyr = {
         'A': 'А', 'B': 'В', 'C': 'С', 'E': 'Е', 'H': 'Н',
@@ -121,15 +122,14 @@ uploaded = files.upload()
 results_list = []
 
 for filename in uploaded.keys():
-    print(f"\n{'='*50}")
-    print(f"📸 {filename}")
+    print(f" {filename}")
 
     img = cv2.imread(filename)
     results = model(img, conf=0.3)
     cars = [box for box in results[0].boxes if int(box.cls[0]) == 2]
 
     if not cars:
-        print("❌ Автомобиль не найден")
+        print(" Автомобиль не найден")
         results_list.append({"file": filename, "plate": "", "access": False})
         continue
 
@@ -158,26 +158,24 @@ for filename in uploaded.keys():
     if result:
         raw_text = result[0][1].upper()
         confidence = result[0][2]
-        print(f"🔍 Распознано: '{raw_text}' (уверенность: {confidence:.3f})")
+        print(f" Распознано: '{raw_text}' (уверенность: {confidence:.3f})")
 
         normalized = normalize_plate(raw_text)
-        print(f"📝 Нормализовано: '{normalized}'")
+        print(f" Нормализовано: '{normalized}'")
 
         is_allowed = normalized in allowed_plates
         if is_allowed:
-            print("🔓 ДОСТУП РАЗРЕШЁН!")
+            print(" ДОСТУП РАЗРЕШЁН!")
         else:
-            print("🔒 ДОСТУП ЗАПРЕЩЁН!")
+            print(" ДОСТУП ЗАПРЕЩЁН!")
 
         results_list.append({"file": filename, "plate": normalized, "access": is_allowed})
     else:
-        print("❌ Номер не распознан")
+        print(" Номер не распознан")
         results_list.append({"file": filename, "plate": "", "access": False})
 
 # Итог
-print("\n" + "="*50)
 print("ИТОГОВЫЕ РЕЗУЛЬТАТЫ")
-print("="*50)
 for res in results_list:
     status = "✅" if res["access"] else "❌"
     print(f"{status} {res['file']}: {res['plate'] if res['plate'] else '—'}")
