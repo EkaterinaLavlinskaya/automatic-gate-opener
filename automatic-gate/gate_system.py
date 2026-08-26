@@ -9,17 +9,16 @@ import requests
 import pandas as pd
 from ultralytics import YOLO
 
-# ============================================
+
 # НАСТРОЙКИ
-# ============================================
 # Arduino (проверь COM-порт!)
 try:
     arduino = serial.Serial('COM4', 9600, timeout=1)
     time.sleep(2)
-    print("✅ Arduino подключён")
+    print(" Arduino подключён")
 except:
     arduino = None
-    print("⚠️ Arduino не найден, работаем без него")
+    print(" Arduino не найден, работаем без него")
 
 # SMS (зарегистрируйся на sms.ru)
 SMS_API_KEY = "ВАШ_API_КЛЮЧ"  # из личного кабинета sms.ru
@@ -31,34 +30,34 @@ VIDEO_SAVE_PATH = "recordings"
 if not os.path.exists(VIDEO_SAVE_PATH):
     os.makedirs(VIDEO_SAVE_PATH)
 
-# ============================================
+
 # БАЗА РАЗРЕШЁННЫХ НОМЕРОВ
-# ============================================
+
 ALLOWED_PLATES = ["А273КК", "Н642ВУ", "А123ВС", "В456CD", "X999XX", "К777АА"]
 
 # Сохраняем в CSV
 db_path = "allowed_plates.csv"
 df = pd.DataFrame({"plate": ALLOWED_PLATES})
 df.to_csv(db_path, index=False, encoding="utf-8")
-print("✅ База номеров создана")
+print(" База номеров создана")
 print("Разрешённые номера:")
 for plate in ALLOWED_PLATES:
     print(f"   - {plate}")
 
-# ============================================
+
 # ЗАГРУЗКА МОДЕЛЕЙ
-# ============================================
+
 print("Загрузка YOLO...")
 model = YOLO("yolo11n.pt")
-print("✅ YOLO загружен")
+print(" YOLO загружен")
 
 print("Загрузка EasyOCR...")
 reader = easyocr.Reader(['ru', 'en'], gpu=False)
-print("✅ EasyOCR загружен")
+print(" EasyOCR загружен")
 
-# ============================================
+
 # ПЕРЕМЕННЫЕ ДЛЯ ЗАПИСИ ВИДЕО
-# ============================================
+
 recording = False
 video_writer = None
 recording_start_time = 0
@@ -67,39 +66,36 @@ NO_CAR_TIMEOUT = 3  # секунд без машины до остановки �
 car_detected = False
 sms_sent_for_current_car = False
 
-# ============================================
+
 # ФУНКЦИЯ ОТПРАВКИ SMS
-# ============================================
+
 def send_sms(message):
-    """Отправка SMS через SMS.ru"""
+  
     if not SMS_ENABLED:
-        print(f"📱 [SMS бы отправлено]: {message}")
+        print(f" [SMS бы отправлено]: {message}")
         return
     try:
         url = "https://sms.ru/sms/send"
         params = {"api_id": SMS_API_KEY, "to": YOUR_PHONE, "msg": message, "json": 1}
         response = requests.get(url, params=params)
-        print(f"📱 SMS отправлено: {message[:50]}...")
+        print(f" SMS отправлено: {message[:50]}...")
     except Exception as e:
-        print(f"❌ Ошибка SMS: {e}")
+        print(f" Ошибка SMS: {e}")
 
-# ============================================
 # ФУНКЦИЯ ОТКРЫТИЯ ВОРОТ
-# ============================================
+
 def open_gate():
-    """Открывает ворота через Arduino"""
+    
     if arduino:
         arduino.write(b'OPEN\n')
-        print("🔌 КОМАНДА OPEN отправлена на Arduino")
-        send_sms("🔓 Ворота открыты")
+        print(" КОМАНДА OPEN отправлена на Arduino")
+        send_sms(" Ворота открыты")
     else:
-        print("⚠️ Arduino не подключён, ворота не открылись")
+        print(" Arduino не подключён, ворота не открылись")
 
-# ============================================
-# ФУНКЦИЯ НОРМАЛИЗАЦИИ НОМЕРА (из твоего рабочего кода)
-# ============================================
+# ФУНКЦИЯ НОРМАЛИЗАЦИИ НОМЕРА 
 def normalize_plate(text):
-    """Гибкая нормализация номера"""
+
     # 1. Замена латиницы на кириллицу
     lat_to_cyr = {
         'A': 'А', 'B': 'В', 'C': 'С', 'E': 'Е', 'H': 'Н',
@@ -179,44 +175,41 @@ def normalize_plate(text):
 
     return text
 
-# ============================================
+
 # ФУНКЦИЯ ДОБАВЛЕНИЯ ВРЕМЕННОЙ МЕТКИ
-# ============================================
 def add_timestamp(frame):
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     cv2.putText(frame, current_time, (10, 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
     return frame
 
-# ============================================
+
 # ОСНОВНОЙ ЦИКЛ С КАМЕРОЙ
-# ============================================
 def main():
     global recording, video_writer, recording_start_time
     global last_car_detected_time, car_detected, sms_sent_for_current_car
 
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        print("❌ Не удалось открыть камеру")
+        print(" Не удалось открыть камеру")
         print("Попробуй подключить внешнюю камеру или используй телефон")
         return
 
-    print("\n" + "="*50)
-    print("✅ КАМЕРА ЗАПУЩЕНА")
-    print("="*50)
-    print("📹 Запись начнётся автоматически при обнаружении автомобиля")
-    print("🔍 Распознавание номеров включено")
-    print("📱 SMS-уведомления", "ВКЛЮЧЕНЫ" if SMS_ENABLED else "ВЫКЛЮЧЕНЫ (демо-режим)")
-    print("🔌 Управление воротами:", "ВКЛЮЧЕНО" if arduino else "ВЫКЛЮЧЕНО")
+
+    print(" КАМЕРА ЗАПУЩЕНА")
+    print(" Запись начнётся автоматически при обнаружении автомобиля")
+    print(" Распознавание номеров включено")
+    print(" SMS-уведомления", "ВКЛЮЧЕНЫ" if SMS_ENABLED else "ВЫКЛЮЧЕНЫ (демо-режим)")
+    print(" Управление воротами:", "ВКЛЮЧЕНО" if arduino else "ВЫКЛЮЧЕНО")
     print("\nНажми 'q' для выхода")
-    print("="*50 + "\n")
+
 
     frame_count = 0
 
     while True:
         ret, frame = cap.read()
         if not ret:
-            print("⚠️ Не удалось захватить кадр")
+            print(" Не удалось захватить кадр")
             break
 
         frame = add_timestamp(frame)
@@ -228,10 +221,10 @@ def main():
             cars = [box for box in results[0].boxes if int(box.cls[0]) == 2]
 
             if cars:
-                # ===== ОБНАРУЖЕНА МАШИНА =====
+                # ОБНАРУЖЕНА МАШИНА
                 if not car_detected:
                     car_detected = True
-                    print(f"\n🚗 АВТОМОБИЛЬ ОБНАРУЖЕН в {datetime.datetime.now().strftime('%H:%M:%S')}")
+                    print(f"\n АВТОМОБИЛЬ ОБНАРУЖЕН в {datetime.datetime.now().strftime('%H:%M:%S')}")
                     sms_sent_for_current_car = False
 
                     # НАЧАЛО ЗАПИСИ ВИДЕО
@@ -244,11 +237,11 @@ def main():
                         if video_writer.isOpened():
                             recording = True
                             recording_start_time = time.time()
-                            print(f"🎥 НАЧАЛО ЗАПИСИ: {filename}")
+                            print(f" НАЧАЛО ЗАПИСИ: {filename}")
 
                 last_car_detected_time = time.time()
 
-                # ===== РАСПОЗНАВАНИЕ НОМЕРА =====
+                # РАСПОЗНАВАНИЕ НОМЕРА
                 for car in cars:
                     x1, y1, x2, y2 = map(int, car.xyxy[0].tolist())
                     car_h = y2 - y1
@@ -278,45 +271,45 @@ def main():
                                 confidence = result[0][2]
                                 normalized = normalize_plate(raw_text)
 
-                                print(f"🔍 Распознано: {raw_text} → {normalized} (уверенность: {confidence:.3f})")
+                                print(f" Распознано: {raw_text} → {normalized} (уверенность: {confidence:.3f})")
 
                                 if normalized in ALLOWED_PLATES:
-                                    print(f"🔓 ДОСТУП РАЗРЕШЁН! Номер {normalized} в базе")
+                                    print(f" ДОСТУП РАЗРЕШЁН! Номер {normalized} в базе")
                                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                                     cv2.putText(frame, f"GRANTED: {normalized}", (x1, y1-10),
                                                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
                                     open_gate()
                                 else:
-                                    print(f"🔒 ДОСТУП ЗАПРЕЩЁН! Номер {normalized} не в базе")
+                                    print(f" ДОСТУП ЗАПРЕЩЁН! Номер {normalized} не в базе")
                                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                                     cv2.putText(frame, f"DENIED: {normalized}", (x1, y1-10),
                                                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                                     if not sms_sent_for_current_car:
-                                        send_sms(f"❌ Доступ запрещён. Номер {normalized} не в базе")
+                                        send_sms(f" Доступ запрещён. Номер {normalized} не в базе")
                                         sms_sent_for_current_car = True
                             else:
                                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 2)
                                 cv2.putText(frame, "Plate not recognized", (x1, y1-10),
                                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
                                 if not sms_sent_for_current_car:
-                                    send_sms("⚠️ Автомобиль обнаружен, но номер не распознан")
+                                    send_sms(" Автомобиль обнаружен, но номер не распознан")
                                     sms_sent_for_current_car = True
                         except Exception as e:
-                            print(f"⚠️ Ошибка OCR: {e}")
+                            print(f" Ошибка OCR: {e}")
 
             else:
-                # ===== МАШИНЫ НЕТ =====
+                #  МАШИНЫ НЕТ 
                 if car_detected:
                     if time.time() - last_car_detected_time > NO_CAR_TIMEOUT:
                         car_detected = False
-                        print(f"\n🚫 АВТОМОБИЛЬ ПОКИНУЛ ЗОНУ в {datetime.datetime.now().strftime('%H:%M:%S')}")
+                        print(f"\n АВТОМОБИЛЬ ПОКИНУЛ ЗОНУ в {datetime.datetime.now().strftime('%H:%M:%S')}")
 
                         # ОСТАНОВКА ЗАПИСИ
                         if recording and video_writer:
                             video_writer.release()
                             video_writer = None
                             duration = time.time() - recording_start_time
-                            print(f"🛑 ЗАПИСЬ ОСТАНОВЛЕНА (длительность: {duration:.1f} сек)")
+                            print(f" ЗАПИСЬ ОСТАНОВЛЕНА (длительность: {duration:.1f} сек)")
                             recording = False
 
         # Запись кадра в видео
@@ -337,7 +330,7 @@ def main():
     cv2.destroyAllWindows()
     if arduino:
         arduino.close()
-    print("\n✅ Программа завершена")
+    print("\n Программа завершена")
 
 if __name__ == "__main__":
     main()
