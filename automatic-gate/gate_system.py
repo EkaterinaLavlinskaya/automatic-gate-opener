@@ -1,4 +1,4 @@
-mport cv2
+import cv2
 import easyocr
 import serial
 import time
