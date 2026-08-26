@@ -1,11 +1,11 @@
 import cv2
 import datetime
 
-# Попробуй 0 или 1
+
 cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
-    print("❌ Камера не найдена. Попробуй изменить номер камеры.")
+    print(" Камера не найдена. Попробуй изменить номер камеры.")
     exit()
 
 # Параметры видео
@@ -15,13 +15,13 @@ filename = f"C:/Users/Денис/Downloads/recording_{datetime.datetime.now().st
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter(filename, fourcc, 20.0, (width, height))
 
-print(f"✅ Запись: {filename}")
-print("⏹️ Нажми 'q' для остановки")
+print(f" Запись: {filename}")
+print(" Нажми 'q' для остановки")
 
 while True:
     ret, frame = cap.read()
     if not ret:
-        print("❌ Ошибка захвата кадра")
+        print(" Ошибка захвата кадра")
         break
     
     # Добавляем время на кадр
@@ -37,4 +37,4 @@ while True:
 cap.release()
 out.release()
 cv2.destroyAllWindows()
-print("✅ Готово! Видео сохранено.")
+print(" Готово! Видео сохранено.")
