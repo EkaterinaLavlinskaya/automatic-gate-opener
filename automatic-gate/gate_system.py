@@ -42,7 +42,7 @@ df.to_csv(db_path, index=False, encoding="utf-8")
 print(" База номеров создана")
 print("Разрешённые номера:")
 for plate in ALLOWED_PLATES:
-    print(f"   - {plate}")
+    print(f" {plate}")
 
 
 # ЗАГРУЗКА МОДЕЛЕЙ
