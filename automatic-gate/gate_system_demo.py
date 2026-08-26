@@ -6,17 +6,17 @@ import os
 import sys
 from ultralytics import YOLO
 
-# ============================================
+
 # НАСТРОЙКИ
-# ============================================
+
 # Arduino (проверь COM-порт!)
 try:
     arduino = serial.Serial('COM4', 9600, timeout=1)
     time.sleep(2)
-    print("✅ Arduino подключён")
+    print(" Arduino подключён")
 except:
     arduino = None
-    print("⚠️ Arduino не найден, работаем без него")
+    print(" Arduino не найден, работаем без него")
 
 # Папка для видео
 VIDEO_SAVE_PATH = "recordings"
@@ -26,7 +26,7 @@ if not os.path.exists(VIDEO_SAVE_PATH):
 # Загрузка модели YOLO
 print("Загрузка YOLO...")
 model = YOLO("yolo11n.pt")
-print("✅ YOLO загружен")
+print(" YOLO загружен")
 
 # Переменные для записи видео
 recording = False
@@ -38,35 +38,35 @@ gate_opened = False
 program_completed = False
 
 
-# ============================================
+
 # ФУНКЦИИ
-# ============================================
+#Добавляет временную метку на кадр
 def add_timestamp(frame):
-    """Добавляет временную метку на кадр"""
+    
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     cv2.putText(frame, current_time, (10, 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
     return frame
 
-
+# Открывает ворота через Arduino
 def open_gate():
-    """Открывает ворота через Arduino"""
+    
     global gate_opened
     if arduino:
         arduino.write(b'OPEN\n')
-        print("🔌 КОМАНДА OPEN отправлена на Arduino")
+        print(" КОМАНДА OPEN отправлена на Arduino")
         gate_opened = True
     else:
-        print("⚠️ Arduino не подключён, ворота не открылись")
+        print(" Arduino не подключён, ворота не открылись")
         gate_opened = True  # Для демо считаем, что открылись
 
-
+# завершает программу
 def complete_program():
-    """Завершает программу"""
+   
     global program_completed
     program_completed = True
-    print("\n✅ Блокировка снята, обнаружение машин возобновлено")
-    print("✅ Демо-программа завершена")
+    print("\n Блокировка снята, обнаружение машин возобновлено")
+    print(" Демо-программа завершена")
 
     # Небольшая задержка перед выходом
     time.sleep(1)
@@ -80,25 +80,24 @@ def complete_program():
     sys.exit(0)
 
 
-# ============================================
+
 # ОСНОВНОЙ ЦИКЛ С КАМЕРОЙ
-# ============================================
+
 def main():
     global recording, video_writer, recording_start_time, gate_opened, program_completed
 
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        print("❌ Не удалось открыть камеру")
+        print(" Не удалось открыть камеру")
         return
 
-    print("\n" + "=" * 50)
-    print("✅ ДЕМО-РЕЖИМ: РАСПОЗНАВАНИЕ АВТОМОБИЛЕЙ")
-    print("=" * 50)
-    print("📹 Запись начнётся при обнаружении автомобиля")
-    print("🔓 При обнаружении автомобиля ворота открываются")
-    print("🚫 Программа завершится после открытия ворот")
+
+    print(" ДЕМО-РЕЖИМ: РАСПОЗНАВАНИЕ АВТОМОБИЛЕЙ")
+    print(" Запись начнётся при обнаружении автомобиля")
+    print(" При обнаружении автомобиля ворота открываются")
+    print(" Программа завершится после открытия ворот")
     print("\nНажми 'q' для выхода")
-    print("=" * 50 + "\n")
+
 
     frame_count = 0
     car_detected = False
@@ -107,7 +106,7 @@ def main():
     while not program_completed:
         ret, frame = cap.read()
         if not ret:
-            print("⚠️ Не удалось захватить кадр")
+            print(" Не удалось захватить кадр")
             break
 
         frame = add_timestamp(frame)
@@ -119,12 +118,12 @@ def main():
             cars = [box for box in results[0].boxes if int(box.cls[0]) == 2]
 
             if cars and not car_detected:
-                # ===== ОБНАРУЖЕНА МАШИНА =====
+                # ОБНАРУЖЕНА МАШИНА
                 car_detected = True
                 access_granted = True
 
-                print(f"\n🚗 АВТОМОБИЛЬ ОБНАРУЖЕН в {datetime.datetime.now().strftime('%H:%M:%S')}")
-                print("🔓 ДОСТУП РАЗРЕШЁН! ВОРОТА ОТКРЫВАЮТСЯ")
+                print(f"\n АВТОМОБИЛЬ ОБНАРУЖЕН в {datetime.datetime.now().strftime('%H:%M:%S')}")
+                print(" ДОСТУП РАЗРЕШЁН! ВОРОТА ОТКРЫВАЮТСЯ")
                 open_gate()
 
                 # НАЧАЛО ЗАПИСИ ВИДЕО
@@ -137,9 +136,9 @@ def main():
                     if video_writer.isOpened():
                         recording = True
                         recording_start_time = time.time()
-                        print(f"🎥 НАЧАЛО ЗАПИСИ: {filename}")
+                        print(f" НАЧАЛО ЗАПИСИ: {filename}")
 
-                # ===== ОТРИСОВКА КВАДРАТА И ПОДПИСИ =====
+                # ОТРИСОВКА КВАДРАТА И ПОДПИСИ
                 for car in cars:
                     x1, y1, x2, y2 = map(int, car.xyxy[0].tolist())
                     confidence = float(car.conf[0])
@@ -164,7 +163,7 @@ def main():
                     video_writer.release()
                     video_writer = None
                     duration = time.time() - recording_start_time
-                    print(f"🛑 ЗАПИСЬ ОСТАНОВЛЕНА (длительность: {duration:.1f} сек)")
+                    print(f" ЗАПИСЬ ОСТАНОВЛЕНА (длительность: {duration:.1f} сек)")
                     recording = False
 
                 # Завершаем программу
