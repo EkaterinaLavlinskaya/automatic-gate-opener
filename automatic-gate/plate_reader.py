@@ -177,5 +177,5 @@ for filename in uploaded.keys():
 # Итог
 print("ИТОГОВЫЕ РЕЗУЛЬТАТЫ")
 for res in results_list:
-    status = "✅" if res["access"] else "❌"
+    status = " OK" if res["access"] else "BAD"
     print(f"{status} {res['file']}: {res['plate'] if res['plate'] else '—'}")
